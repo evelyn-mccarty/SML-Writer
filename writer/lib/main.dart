@@ -1,8 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'package:sml_writer/json_article.dart';
 
 void main() {
   runApp(MyApp());
+}
+
+Future<String> uploadArticle(JsonArticle item) async {
+  final response = await http.put(
+    Uri.parse(
+        'https://hjk9v5kjg1.execute-api.us-east-2.amazonaws.com/Articles'),
+    headers: <String, String>{
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode(JsonArticle.toJson(item)),
+  );
+
+  if (response.statusCode == 200) {
+    // If the server did return a 201 CREATED response,
+    // then parse the JSON.
+    return response.body;
+  } else {
+    // If the server did not return a 201 CREATED response,
+    // then throw an exception.
+    throw Exception('Failed to create album.');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -133,6 +158,7 @@ class TextEntryPage extends StatefulWidget {
 class _TextEntryPageState extends State<TextEntryPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
+  final TextEditingController _authorController = TextEditingController();
   List<String> tags = [
     "Education Tag",
     "Immigration Tag",
@@ -158,6 +184,12 @@ class _TextEntryPageState extends State<TextEntryPage> {
               controller: _titleController,
               decoration: InputDecoration(
                 hintText: 'Article Title',
+              ),
+            ),
+            TextField(
+              controller: _authorController,
+              decoration: InputDecoration(
+                hintText: 'Article Author',
               ),
             ),
             SizedBox(height: 20),
@@ -206,11 +238,12 @@ class _TextEntryPageState extends State<TextEntryPage> {
             ElevatedButton(
               onPressed: () {
                 // Process the entered text and selected tags
-                final String title = _titleController.text;
-                final String content = _contentController.text;
-                print('Article Title: $title');
-                print('Article Content: $content');
-                print('Selected Tags: $selectedTags');
+                var temp = JsonArticle(
+                    title: _titleController.text,
+                    author: _authorController.text,
+                    tags: selectedTags,
+                    body: _contentController.text.split('\n'));
+                var fut = uploadArticle(temp);
                 Navigator.pop(context);
               },
               child: Text('Submit'),
