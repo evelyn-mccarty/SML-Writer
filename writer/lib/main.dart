@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_switch/flutter_switch.dart';
 
 import 'package:sml_writer/json_article.dart';
 
@@ -167,6 +168,7 @@ class _TextEntryPageState extends State<TextEntryPage> {
     "Archived"
   ]; // Updated list of tags
   List<String> selectedTags = [];
+  bool esp = false;
 
   @override
   Widget build(BuildContext context) {
@@ -206,6 +208,34 @@ class _TextEntryPageState extends State<TextEntryPage> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
+            Row(
+              children: [
+                SizedBox(
+                  width: 16,
+                ),
+                Text(
+                  "Language",
+                  style: TextStyle(fontSize: 16.5),
+                ),
+                Spacer(),
+                FlutterSwitch(
+                  showOnOff: true,
+                  width: 100,
+                  value: esp,
+                  activeColor: Colors.red,
+                  inactiveColor: Colors.blue,
+                  activeText: "Español",
+                  inactiveText: "English",
+                  activeTextFontWeight: FontWeight.normal,
+                  inactiveTextFontWeight: FontWeight.normal,
+                  onToggle: (bool value) {
+                    setState(() {
+                      esp = value;
+                    });
+                  },
+                ),
+              ],
+            ),
             Expanded(
               child: ListView.builder(
                 itemCount: tags.length,
@@ -238,6 +268,11 @@ class _TextEntryPageState extends State<TextEntryPage> {
             ElevatedButton(
               onPressed: () {
                 // Process the entered text and selected tags
+                if (esp) {
+                  selectedTags.add("Spanish");
+                } else {
+                  selectedTags.add("English");
+                }
                 var temp = JsonArticle(
                     title: _titleController.text,
                     author: _authorController.text,
